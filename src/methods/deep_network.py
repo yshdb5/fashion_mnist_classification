@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
 from torch.utils.data import TensorDataset, DataLoader
 
 ## MS2
-
 
 class MLP(nn.Module):
     """
@@ -13,7 +13,7 @@ class MLP(nn.Module):
     It should not use any convolutional layers.
     """
 
-    def __init__(self, input_size, n_classes):
+    def __init__(self, input_size, n_classes, sizes=(512, 256, 128)):
         """
         Initialize the network.
         
@@ -25,11 +25,11 @@ class MLP(nn.Module):
             n_classes (int): number of classes to predict
         """
         super().__init__()
-        ##
-        ###
-        #### WRITE YOUR CODE HERE!
-        ###
-        ##
+
+        self.fc1 = nn.Linear(input_size, sizes[0])
+        self.fc2 = nn.Linear(sizes[0], sizes[1])
+        self.fc3 = nn.Linear(sizes[1], sizes[2])
+        self.fc4 = nn.Linear(sizes[2], n_classes)
 
     def forward(self, x):
         """
@@ -41,11 +41,12 @@ class MLP(nn.Module):
             preds (tensor): logits of predictions of shape (N, C)
                 Reminder: logits are value pre-softmax.
         """
-        ##
-        ###
-        #### WRITE YOUR CODE HERE!
-        ###
-        ##
+        x = torch.flatten(x, 1)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = F.relu(self.fc3(x))
+        preds = self.fc4(x)
+        
         return preds
 
 
@@ -56,7 +57,7 @@ class CNN(nn.Module):
     It should use at least one convolutional layer.
     """
 
-    def __init__(self, input_channels, n_classes):
+    def __init__(self, input_channels, n_classes, filters=(16, 32, 64), sizes=(240, 120)):
         """
         Initialize the network.
         
@@ -68,11 +69,16 @@ class CNN(nn.Module):
             n_classes (int): number of classes to predict
         """
         super().__init__()
-        ##
-        ###
-        #### WRITE YOUR CODE HERE!
-        ###
-        ##
+
+        # Convolutional layers
+        self.conv2d1 = nn.Conv2d(n, filters[0], kernel_size=3, padding=1) 
+        self.conv2d2 = nn.Conv2d(filters[0], filters[1], kernel_size=3, padding=1) 
+        self.conv2d3 = nn.Conv2d(filters[1], filters[2], kernel_size=3, padding=1)
+
+        # Fully connected layers
+        self.fc1 = nn.Linear(filters[2]*3*3, size[0]) 
+        self.fc2 = nn.Linear(sizes[0], sizes[1])
+        self.fc3 = nn.Linear(sizes[1], n_classes)
 
     def forward(self, x):
         """
@@ -84,11 +90,19 @@ class CNN(nn.Module):
             preds (tensor): logits of predictions of shape (N, C)
                 Reminder: logits are value pre-softmax.
         """
-        ##
-        ###
-        #### WRITE YOUR CODE HERE!
-        ###
-        ##
+        x = F.relu(self.conv2d1(x))
+        x = F.max_pool2d(x, kernel_size=2, stride=2)
+        x = F.relu(self.conv2d2(x))
+        x = F.max_pool2d(x, kernel_size=2, stride=2)
+        x = F.relu(self.conv2d3(x))
+        x = F.max_pool2d(x, kernel_size=2, stride=2)
+
+        x = torch.flatten(x, 1) 
+
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        preds = self.fc3(x)
+        
         return preds
 
 
@@ -150,7 +164,7 @@ class Trainer(object):
         self.batch_size = batch_size
 
         self.criterion = nn.CrossEntropyLoss()
-        self.optimizer = ...  ### WRITE YOUR CODE HERE
+        self.optimizer = optim.Adam(model.parameters(), lr=lr)
 
     def train_all(self, dataloader):
         """
@@ -177,11 +191,29 @@ class Trainer(object):
         Arguments:
             dataloader (DataLoader): dataloader for training data
         """
-        ##
-        ###
-        #### WRITE YOUR CODE HERE!
-        ###
-        ##
+        self.model.train()
+        for it, batch in enumerate(dataloader):
+            # Load a batch, break it down in images and targets.
+            x, y = batch
+
+            # Run forward pass.
+            logits = model(x)
+            
+            # Compute loss.
+            loss = criterion(logits, y)
+            
+            # Run backward pass.
+            loss.backward()
+            
+            # Update the weights using 'optimizer'.
+            optimizer.step()
+            
+            # Zero-out the accumulated gradients.
+            optimizer.zero_grad()
+
+            print('\rEp {}/{}, it {}/{}: loss train: {:.2f}, accuracy train: {:.2f}'.
+                  format(ep + 1, self.epochs, it + 1, len(dataloader), loss,
+                         accuracy_fn(logits, y)), end='')
 
     def predict_torch(self, dataloader):
         """
@@ -200,11 +232,21 @@ class Trainer(object):
             pred_labels (torch.tensor): predicted labels of shape (N,),
                 with N the number of data points in the validation/test data.
         """
-        ##
-        ###
-        #### WRITE YOUR CODE HERE!
-        ###
-        ##
+        self.model.eval()
+        with torch.no_grad():
+            acc_run = 0
+            pred_labels = torch.tensor([])
+            for it, batch in enumerate(dataloader):
+                # Get batch of data.
+                x, y = batch
+                curr_bs = x.shape[0]
+                pred = model(x)
+                pred_labels = torch.cat(pred_labels, onehot_to_label(pred))
+                acc_run += accuracy_fn(pred, y) * curr_bs
+            acc = 100 * acc_run / len(dataloader.dataset)
+
+            print(', accuracy test: {:.2f}%'.format(acc))
+
         return pred_labels
     
     def fit(self, training_data, training_labels):
