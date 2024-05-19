@@ -26,6 +26,14 @@ def main(args):
     ## 2. Then we must prepare it. This is were you can create a validation set,
     #  normalize, add bias, etc.
 
+    # Add bias term
+    xtrain, xtest = append_bias_term(xtrain), append_bias_term(xtest)
+
+    # Normalize the data
+    mean = np.mean(xtrain, axis=0)
+    std = np.std(xtrain, axis=0)
+    xtrain, xtest = normalize_fn(xtrain, mean, std), normalize_fn(xtest, mean, std)
+
     # Make a validation set
     if not args.test:
     ### WRITE YOUR CODE HERE
@@ -38,8 +46,10 @@ def main(args):
     if args.use_pca:
         print("Using PCA")
         pca_obj = PCA(d=args.pca_d)
-        ### WRITE YOUR CODE HERE: use the PCA object to reduce the dimensionality of the data
+        exvar = pca_obj.find_principal_components(xtrain)
 
+        xtrain = pca_obj.reduce_dimension(xtrain)
+        xtest = pca_obj.reduce_dimension(xtest)
 
     ## 3. Initialize the method you want to use.
 
@@ -49,7 +59,11 @@ def main(args):
     # Note: you might need to reshape the data depending on the network you use!
     n_classes = get_n_classes(ytrain)
     if args.nn_type == "mlp":
-        model = ... ### WRITE YOUR CODE HERE
+        model = MLP(input_size=xtrain.shape[1], n_classes=n_classes)
+    elif args.nn_type == "cnn":
+        model = CNN(input_channels=xtrain.shape[1], n_classes=n_classes)
+    elif args.nn_type == "transformer":
+        model = MyViT(chw=(1, 28, 28), n_patches=16, n_blocks=1, hidden_d=64, n_heads=4, out_d=n_classes)
 
     summary(model)
 
