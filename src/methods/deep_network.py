@@ -350,10 +350,6 @@ class Trainer(object):
             # Zero-out the accumulated gradients.
             self.optimizer.zero_grad()
 
-            print('\rEp {}/{}, it {}/{}: loss train: {:.2f}, accuracy train: {:.2f}'.
-                  format(ep + 1, self.epochs, it + 1, len(dataloader), loss,
-                         accuracy_fn(logits, y)), end='')
-
     def predict_torch(self, dataloader):
         """
         Predict the validation/test dataloader labels using the model.
@@ -373,18 +369,13 @@ class Trainer(object):
         """
         self.model.eval()
         with torch.no_grad():
-            acc_run = 0
             pred_labels = torch.tensor([])
             for it, batch in enumerate(dataloader):
                 # Get batch of data.
-                x, y = batch
-                curr_bs = x.shape[0]
+                x = batch[0]
                 pred = self.model(x)
-                pred_labels = torch.cat(pred_labels, onehot_to_label(pred))
-                acc_run += accuracy_fn(pred, y) * curr_bs
-            acc = 100 * acc_run / len(dataloader.dataset)
-
-            print(', accuracy test: {:.2f}%'.format(acc))
+                pred = torch.argmax(pred, dim=1)
+                pred_labels = torch.cat((pred_labels, pred), dim = 0)
 
         return pred_labels
     
@@ -424,6 +415,7 @@ class Trainer(object):
         # First, prepare data for pytorch
         test_dataset = TensorDataset(torch.from_numpy(test_data).float())
         test_dataloader = DataLoader(test_dataset, batch_size=self.batch_size, shuffle=False)
+
 
         pred_labels = self.predict_torch(test_dataloader)
 

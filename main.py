@@ -19,7 +19,7 @@ def main(args):
                           of this file). Their value can be accessed as "args.argument".
     """
     ## 1. First, we load our data and flatten the images into vectors
-    xtrain, xtest, ytrain = load_data(args.data_path)
+    xtrain, xtest, ytrain = load_data(args.data)
     xtrain = xtrain.reshape(xtrain.shape[0], -1)
     xtest = xtest.reshape(xtest.shape[0], -1)
 
@@ -36,11 +36,10 @@ def main(args):
 
     # Make a validation set
     if not args.test:
-    ### WRITE YOUR CODE HERE
+        ### WRITE YOUR CODE HERE
         print("Using PCA")
 
     ### WRITE YOUR CODE HERE to do any other data processing
-
 
     # Dimensionality reduction (MS2)
     if args.use_pca:
@@ -70,7 +69,6 @@ def main(args):
     # Trainer object
     method_obj = Trainer(model, lr=args.lr, epochs=args.max_iters, batch_size=args.nn_batch_size)
 
-
     ## 4. Train and evaluate the method
 
     # Fit (:=train) the method on the training data
@@ -84,13 +82,11 @@ def main(args):
     macrof1 = macrof1_fn(preds_train, ytrain)
     print(f"\nTrain set: accuracy = {acc:.3f}% - F1-score = {macrof1:.6f}")
 
-
     ## As there are no test dataset labels, check your model accuracy on validation dataset.
     # You can check your model performance on test set by submitting your test set predictions on the AIcrowd competition.
     acc = accuracy_fn(preds, xtest)
     macrof1 = macrof1_fn(preds, xtest)
     print(f"Validation set:  accuracy = {acc:.3f}% - F1-score = {macrof1:.6f}")
-
 
     ### WRITE YOUR CODE HERE if you want to add other outputs, visualization, etc.
 
@@ -111,12 +107,12 @@ if __name__ == '__main__':
     parser.add_argument('--use_pca', action="store_true", help="use PCA for feature reduction")
     parser.add_argument('--pca_d', type=int, default=100, help="the number of principal components")
 
-
-    parser.add_argument('--lr', type=float, default=1e-5, help="learning rate for methods with learning rate")
+    parser.add_argument('--lr', type=float, default=1e-5, help="learning rate"
+                                                               "for methods with learning rate")
     parser.add_argument('--max_iters', type=int, default=100, help="max iters for methods which are iterative")
     parser.add_argument('--test', action="store_true",
-                        help="train on whole training data and evaluate on the test data, otherwise use a validation set")
-
+                        help="train on whole training data and evaluate on the test data,"
+                             "otherwise use a validation set")
 
     # "args" will keep in memory the arguments and their values,
     # which can be accessed as "args.data", for example.

@@ -123,8 +123,8 @@ class TestProject(unittest.TestCase):
         self.assertIn(pca.mean.shape, ((D,), (1,D)), f"pca.PCA.mean has wrong shape ({pca.mean.shape} != {(D,)})")
         self.assertIsInstance(pca.W, np.ndarray, f"pca.PCA.W should be an array, not {type(pca.W)}")
         self.assertEqual(pca.W.shape, (D, d), f"pca.PCA.W has wrong shape ({pca.W.shape} != {(D, d)})")
-        with no_print():
-            Y = pca.reduce_dimension(data)
+        #with no_print():
+        Y = pca.reduce_dimension(data)
         self.assertIsInstance(Y, np.ndarray, f"pca.PCA.reduce_dimension() should output an array, not {type(Y)}")
         self.assertEqual(Y.shape, (N, d), f"pca.PCA.reduce_dimension() output has wrong shape ({Y.shape} != {(N, d)})")
 
@@ -184,7 +184,7 @@ class TestProject(unittest.TestCase):
         # Test Trainer
         with no_print():
             trainer.train_all(train_dataloader)
-            pred_labels_test_torch = trainer.predict_torch(test_dataloader)
+        pred_labels_test_torch = trainer.predict_torch(test_dataloader)
         self.assertIsInstance(pred_labels_test_torch, torch.Tensor, f"deep_network.Trainer.predict_torch() should output a tensor, not {type(pred_labels_test_torch)}")
         self.assertEqual(pred_labels_test_torch.shape, (N,), f"deep_network.Trainer.predict_torch() output has wrong shape ({pred_labels_test_torch.shape} != {(N,)})")
 
