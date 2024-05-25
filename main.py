@@ -26,9 +26,6 @@ def main(args):
     ## 2. Then we must prepare it. This is were you can create a validation set,
     #  normalize, add bias, etc.
 
-    # Add bias term
-    xtrain, xtest = append_bias_term(xtrain), append_bias_term(xtest)
-
     # Normalize the data
     mean = np.mean(xtrain, axis=0)
     std = np.std(xtrain, axis=0)
@@ -36,8 +33,20 @@ def main(args):
 
     # Make a validation set
     if not args.test:
-        ### WRITE YOUR CODE HERE
-        print("Using PCA")
+        training_size = int(len(xtrain)*0.8)
+
+        # Shuffle the indices of your training data
+        indices = np.arange(len(xtrain))
+        np.random.shuffle(indices)
+
+        # Split the indices for the data into training and validation indices
+        train_indices, test_indices = indices[:training_size], indices[training_size:]
+
+        # Create the training and validation sets
+        xtrain, xtest = xtrain[train_indices], xtrain[test_indices]
+        ytrain, ytest = ytrain[train_indices], ytrain[test_indices]
+    else:
+        ytest = None
 
     ### WRITE YOUR CODE HERE to do any other data processing
 
@@ -61,9 +70,13 @@ def main(args):
         model = MLP(input_size=xtrain.shape[1], n_classes=n_classes)
     elif args.nn_type == "cnn":
         model = CNN(input_channels=xtrain.shape[1], n_classes=n_classes)
+        model = CNN(input_channels=1, n_classes=n_classes)
+        xtrain = xtrain.reshape(xtrain.shape[0], 1, 28, 28)
+        xtest = xtest.reshape(xtest.shape[0], 1, 28, 28)
     elif args.nn_type == "transformer":
-        model = MyViT(chw=(1, 28, 28), n_patches=16, n_blocks=1, hidden_d=64, n_heads=4, out_d=n_classes)
-
+        model = MyViT(chw=(1, 28, 28), n_patches=14, n_blocks=1, hidden_d=64, n_heads=4, out_d=n_classes)
+        xtrain = xtrain.reshape(xtrain.shape[0], 1, 28, 28)
+        xtest = xtest.reshape(xtest.shape[0], 1, 28, 28)
     summary(model)
 
     # Trainer object
@@ -84,8 +97,8 @@ def main(args):
 
     ## As there are no test dataset labels, check your model accuracy on validation dataset.
     # You can check your model performance on test set by submitting your test set predictions on the AIcrowd competition.
-    acc = accuracy_fn(preds, xtest)
-    macrof1 = macrof1_fn(preds, xtest)
+    acc = accuracy_fn(preds, ytest)
+    macrof1 = macrof1_fn(preds, ytest)
     print(f"Validation set:  accuracy = {acc:.3f}% - F1-score = {macrof1:.6f}")
 
     ### WRITE YOUR CODE HERE if you want to add other outputs, visualization, etc.

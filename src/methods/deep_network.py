@@ -94,6 +94,7 @@ class CNN(nn.Module):
             preds (tensor): logits of predictions of shape (N, C)
                 Reminder: logits are value pre-softmax.
         """
+
         x = F.relu(self.conv2d1(x))
         x = F.max_pool2d(x, kernel_size=2, stride=2)
         x = F.relu(self.conv2d2(x))
@@ -332,6 +333,7 @@ class Trainer(object):
         """
         self.model.train()
         for it, batch in enumerate(dataloader):
+
             # Load a batch, break it down in images and targets.
             x, y = batch
 
@@ -339,7 +341,7 @@ class Trainer(object):
             logits = self.model(x)
             
             # Compute loss.
-            loss = self.criterion(logits, y)
+            loss = self.criterion(logits, y.long())
             
             # Run backward pass.
             loss.backward()
@@ -349,6 +351,10 @@ class Trainer(object):
             
             # Zero-out the accumulated gradients.
             self.optimizer.zero_grad()
+
+            print('\rEp {}/{}, it {}/{}: loss train: {:.2f}, accuracy train: {:.2f}'.
+                  format(ep + 1, self.epochs, it + 1, len(dataloader), loss,
+                         accuracy_fn(onehot_to_label(logits.detach().numpy()), y)), end='')
 
     def predict_torch(self, dataloader):
         """
@@ -371,10 +377,10 @@ class Trainer(object):
         with torch.no_grad():
             pred_labels = torch.tensor([])
             for it, batch in enumerate(dataloader):
-                # Get batch of data.
+            # Get batch of data.
                 x = batch[0]
                 pred = self.model(x)
-                pred = torch.argmax(pred, dim=1)
+                pred = onehot_to_label(pred)
                 pred_labels = torch.cat((pred_labels, pred), dim = 0)
 
         return pred_labels
