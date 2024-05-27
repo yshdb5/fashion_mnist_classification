@@ -1,6 +1,7 @@
 import argparse
-
 import numpy as np
+import time
+
 from torchinfo import summary
 
 from src.data import load_data
@@ -63,18 +64,16 @@ def main(args):
 
     # Neural Networks (MS2)
 
-    # Prepare the model (and data) for Pytorch
-    # Note: you might need to reshape the data depending on the network you use!
+    # Prepare the model (and data) for Pytorch    # Note: you might need to reshape the data depending on the network you use!
     n_classes = get_n_classes(ytrain)
     if args.nn_type == "mlp":
         model = MLP(input_size=xtrain.shape[1], n_classes=n_classes)
     elif args.nn_type == "cnn":
-        model = CNN(input_channels=xtrain.shape[1], n_classes=n_classes)
         model = CNN(input_channels=1, n_classes=n_classes)
         xtrain = xtrain.reshape(xtrain.shape[0], 1, 28, 28)
         xtest = xtest.reshape(xtest.shape[0], 1, 28, 28)
     elif args.nn_type == "transformer":
-        model = MyViT(chw=(1, 28, 28), n_patches=14, n_blocks=1, hidden_d=64, n_heads=4, out_d=n_classes)
+        model = MyViT(chw=(1, 28, 28), n_patches=7, n_blocks=1, hidden_d=64, n_heads=4, out_d=n_classes)
         xtrain = xtrain.reshape(xtrain.shape[0], 1, 28, 28)
         xtest = xtest.reshape(xtest.shape[0], 1, 28, 28)
     summary(model)
@@ -85,10 +84,16 @@ def main(args):
     ## 4. Train and evaluate the method
 
     # Fit (:=train) the method on the training data
+    t1 = time.time()
     preds_train = method_obj.fit(xtrain, ytrain)
+    t2 = time.time()
+    print(f"Training time: {t2-t1:.2f} seconds")
 
     # Predict on unseen data
+    t1 = time.time()
     preds = method_obj.predict(xtest)
+    t2 = time.time()
+    print(f"Prediction time: {t2-t1:.2f} seconds")
 
     ## Report results: performance on train and valid/test sets
     acc = accuracy_fn(preds_train, ytrain)

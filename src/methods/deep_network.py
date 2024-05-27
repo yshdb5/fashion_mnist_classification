@@ -17,7 +17,7 @@ class MLP(nn.Module):
     It should not use any convolutional layers.
     """
 
-    def __init__(self, input_size, n_classes, sizes=(512, 256, 128)):
+    def __init__(self, input_size, n_classes, sizes=(512, 128, 64)):
         """
         Initialize the network.
         
@@ -61,7 +61,7 @@ class CNN(nn.Module):
     It should use at least one convolutional layer.
     """
 
-    def __init__(self, input_channels, n_classes, filters=(16, 32, 64), sizes=(240, 120)):
+    def __init__(self, input_channels, n_classes, filters=(16, 32, 64), sizes=(600, 120)):
         """
         Initialize the network.
         
@@ -76,7 +76,7 @@ class CNN(nn.Module):
 
         # Convolutional layers
         self.conv2d1 = nn.Conv2d(input_channels, filters[0], kernel_size=3, padding=1)
-        self.conv2d2 = nn.Conv2d(filters[0], filters[1], kernel_size=3, padding=1) 
+        self.conv2d2 = nn.Conv2d(filters[0], filters[1], kernel_size=3, padding=1)
         self.conv2d3 = nn.Conv2d(filters[1], filters[2], kernel_size=3, padding=1)
 
         # Fully connected layers
