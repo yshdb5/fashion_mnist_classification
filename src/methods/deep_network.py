@@ -319,8 +319,6 @@ class Trainer(object):
         for ep in range(self.epochs):
             self.train_one_epoch(dataloader, ep)
 
-            print('\rEp {}/{}'.format(ep + 1, self.epochs, end=''))
-
     def train_one_epoch(self, dataloader, ep):
         """
         Train the model for ONE epoch.
@@ -351,6 +349,10 @@ class Trainer(object):
             
             # Zero-out the accumulated gradients.
             self.optimizer.zero_grad()
+
+            # Visualise advancement.
+            print(f"Epoch {ep} / {self.epochs}, iteration {it} / {len(dataloader)}, loss: {loss.item()}", end='\r')
+
 
     def predict_torch(self, dataloader):
         """
