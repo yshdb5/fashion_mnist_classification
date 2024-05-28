@@ -5,7 +5,7 @@ import torch.optim as optim
 from torch.utils.data import TensorDataset, DataLoader
 import numpy as np
 
-from src.utils import accuracy_fn, onehot_to_label
+from src.utils import onehot_to_label
 
 
 ## MS2
@@ -61,7 +61,7 @@ class CNN(nn.Module):
     It should use at least one convolutional layer.
     """
 
-    def __init__(self, input_channels, n_classes, filters=(16, 32, 64), sizes=(600, 120)):
+    def __init__(self, input_channels, n_classes, filters=(32, 64, 128), sizes=(600, 120)):
         """
         Initialize the network.
         
@@ -304,7 +304,7 @@ class Trainer(object):
         self.batch_size = batch_size
 
         self.criterion = nn.CrossEntropyLoss()
-        self.optimizer = optim.Adam(model.parameters(), lr=lr)
+        self.optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
 
     def train_all(self, dataloader):
         """

@@ -7,7 +7,7 @@ from torchinfo import summary
 from src.data import load_data
 from src.methods.pca import PCA
 from src.methods.deep_network import MLP, CNN, Trainer, MyViT
-from src.utils import normalize_fn, append_bias_term, accuracy_fn, macrof1_fn, get_n_classes
+from src.utils import normalize_fn, macrof1_fn, get_n_classes
 
 
 def main(args):
@@ -73,7 +73,7 @@ def main(args):
         xtrain = xtrain.reshape(xtrain.shape[0], 1, 28, 28)
         xtest = xtest.reshape(xtest.shape[0], 1, 28, 28)
     elif args.nn_type == "transformer":
-        model = MyViT(chw=(1, 28, 28), n_patches=7, n_blocks=1, hidden_d=64, n_heads=4, out_d=n_classes)
+        model = MyViT(chw=(1, 28, 28), n_patches=7, n_blocks=2, hidden_d=128, n_heads=8, out_d=n_classes)
         xtrain = xtrain.reshape(xtrain.shape[0], 1, 28, 28)
         xtest = xtest.reshape(xtest.shape[0], 1, 28, 28)
     summary(model)
