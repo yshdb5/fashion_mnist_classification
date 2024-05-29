@@ -17,7 +17,7 @@ class MLP(nn.Module):
     It should not use any convolutional layers.
     """
 
-    def __init__(self, input_size, n_classes, sizes=(512, 128, 64)):
+    def __init__(self, input_size, n_classes, sizes=(512, 128, 64, 32)):
         """
         Initialize the network.
         
@@ -33,7 +33,8 @@ class MLP(nn.Module):
         self.fc1 = nn.Linear(input_size, sizes[0])
         self.fc2 = nn.Linear(sizes[0], sizes[1])
         self.fc3 = nn.Linear(sizes[1], sizes[2])
-        self.fc4 = nn.Linear(sizes[2], n_classes)
+        self.fc4 = nn.Linear(sizes[2], sizes[3])
+        self.fc5 = nn.Linear(sizes[3], n_classes)
 
     def forward(self, x):
         """
@@ -45,13 +46,12 @@ class MLP(nn.Module):
             preds (tensor): logits of predictions of shape (N, C)
                 Reminder: logits are value pre-softmax.
         """
-        x = torch.flatten(x, 1)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
-        preds = self.fc4(x)
+        x = F.relu(self.fc4(x))
         
-        return preds
+        return self.fc5(x)
 
 
 class CNN(nn.Module):
@@ -106,9 +106,8 @@ class CNN(nn.Module):
 
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        preds = self.fc3(x)
         
-        return preds
+        return self.fc3(x)
 
 
 def patchify(images, n_patches):
@@ -197,8 +196,7 @@ class MyViTBlock(nn.Module):
          # MHSA + residual connection.
         out = x + self.mhsa(self.norm1(x))
         # Feedforward + residual connection
-        out = out + self.mlp(self.norm2(out))
-        return out
+        return out + self.mlp(self.norm2(out))
 
 
 class MyViT(nn.Module):
@@ -276,9 +274,7 @@ class MyViT(nn.Module):
         preds = preds[:, 0]
 
         # Map to the output distribution.
-        preds = self.mlp(preds)
-
-        return preds
+        return self.mlp(preds)
 
 
 class Trainer(object):

@@ -1,13 +1,14 @@
 import argparse
 import numpy as np
 import time
+import torch
 
 from torchinfo import summary
 
 from src.data import load_data
 from src.methods.pca import PCA
 from src.methods.deep_network import MLP, CNN, Trainer, MyViT
-from src.utils import normalize_fn, macrof1_fn, get_n_classes
+from src.utils import normalize_fn, accuracy_fn, macrof1_fn, get_n_classes
 
 
 def main(args):
@@ -62,20 +63,21 @@ def main(args):
 
     ## 3. Initialize the method you want to use.
 
-    # Neural Networks (MS2)
-
     # Prepare the model (and data) for Pytorch    # Note: you might need to reshape the data depending on the network you use!
     n_classes = get_n_classes(ytrain)
     if args.nn_type == "mlp":
         model = MLP(input_size=xtrain.shape[1], n_classes=n_classes)
+        xtrain = xtrain.reshape(xtrain.shape[0], -1)
+        xtest = xtest.reshape(xtest.shape[0], -1)
     elif args.nn_type == "cnn":
         model = CNN(input_channels=1, n_classes=n_classes)
         xtrain = xtrain.reshape(xtrain.shape[0], 1, 28, 28)
         xtest = xtest.reshape(xtest.shape[0], 1, 28, 28)
     elif args.nn_type == "transformer":
-        model = MyViT(chw=(1, 28, 28), n_patches=7, n_blocks=2, hidden_d=128, n_heads=8, out_d=n_classes)
+        model = MyViT(chw=(1, 28, 28), n_patches=7, n_blocks=2, hidden_d=64, n_heads=8, out_d=n_classes)
         xtrain = xtrain.reshape(xtrain.shape[0], 1, 28, 28)
         xtest = xtest.reshape(xtest.shape[0], 1, 28, 28)
+
     summary(model)
 
     # Trainer object
@@ -119,15 +121,15 @@ if __name__ == '__main__':
     parser.add_argument('--data', default="dataset", type=str, help="path to your dataset")
     parser.add_argument('--nn_type', default="mlp",
                         help="which network architecture to use, it can be 'mlp' | 'transformer' | 'cnn'")
-    parser.add_argument('--nn_batch_size', type=int, default=64, help="batch size for NN training")
+    parser.add_argument('--nn_batch_size', type=int, default=256, help="batch size for NN training")
     parser.add_argument('--device', type=str, default="cpu",
                         help="Device to use for the training, it can be 'cpu' | 'cuda' | 'mps'")
     parser.add_argument('--use_pca', action="store_true", help="use PCA for feature reduction")
     parser.add_argument('--pca_d', type=int, default=100, help="the number of principal components")
 
-    parser.add_argument('--lr', type=float, default=1e-5, help="learning rate"
+    parser.add_argument('--lr', type=float, default=1e-3, help="learning rate"
                                                                "for methods with learning rate")
-    parser.add_argument('--max_iters', type=int, default=100, help="max iters for methods which are iterative")
+    parser.add_argument('--max_iters', type=int, default=10, help="max iters for methods which are iterative")
     parser.add_argument('--test', action="store_true",
                         help="train on whole training data and evaluate on the test data,"
                              "otherwise use a validation set")
