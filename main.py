@@ -1,7 +1,6 @@
 import argparse
 import numpy as np
 import time
-import torch
 
 from torchinfo import summary
 
@@ -25,8 +24,7 @@ def main(args):
     xtrain = xtrain.reshape(xtrain.shape[0], -1)
     xtest = xtest.reshape(xtest.shape[0], -1)
 
-    ## 2. Then we must prepare it. This is were you can create a validation set,
-    #  normalize, add bias, etc.
+    ## 2. Then we must prepare it. This includes normalizing the data and creating a validation set.
 
     # Normalize the data
     mean = np.mean(xtrain, axis=0)
@@ -50,8 +48,6 @@ def main(args):
     else:
         ytest = None
 
-    ### WRITE YOUR CODE HERE to do any other data processing
-
     # Dimensionality reduction (MS2)
     if args.use_pca:
         print("Using PCA")
@@ -63,7 +59,7 @@ def main(args):
 
     ## 3. Initialize the method you want to use.
 
-    # Prepare the model (and data) for Pytorch    # Note: you might need to reshape the data depending on the network you use!
+    # Prepare the model (and data) for Pytorch
     n_classes = get_n_classes(ytrain)
     if args.nn_type == "mlp":
         model = MLP(input_size=xtrain.shape[1], n_classes=n_classes)
@@ -107,8 +103,6 @@ def main(args):
     acc = accuracy_fn(preds, ytest)
     macrof1 = macrof1_fn(preds, ytest)
     print(f"Validation set:  accuracy = {acc:.3f}% - F1-score = {macrof1:.6f}")
-
-    ### WRITE YOUR CODE HERE if you want to add other outputs, visualization, etc.
 
 
 if __name__ == '__main__':
