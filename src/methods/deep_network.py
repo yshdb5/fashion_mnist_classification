@@ -416,7 +416,6 @@ class Trainer(object):
         test_dataset = TensorDataset(torch.from_numpy(test_data).float())
         test_dataloader = DataLoader(test_dataset, batch_size=self.batch_size, shuffle=False)
 
-
         pred_labels = self.predict_torch(test_dataloader)
 
         # We return the labels after transforming them into numpy array.
