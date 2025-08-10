@@ -135,3 +135,7 @@ The project evaluates models using:
 - **Multiple Architectures**: Traditional ML and modern deep learning
 - **Proper Evaluation**: Train/validation splits with multiple metrics
 - **Performance Monitoring**: Training and inference time tracking
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
